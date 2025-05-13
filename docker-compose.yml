@@ -10,3 +10,9 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    networks:
+      - uber_network
+
+networks:
+  uber_network:
+    driver: bridge
