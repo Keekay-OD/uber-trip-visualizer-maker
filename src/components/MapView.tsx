@@ -27,12 +27,12 @@ const MapView = ({ pickupLocation, destination, isAccepted }: MapViewProps) => {
     }
     mapRef.current.appendChild(canvas);
     
-    // Draw map background
-    ctx.fillStyle = '#1a1d24';
+    // Draw map background - using a lighter blue color similar to the reference
+    ctx.fillStyle = '#e9f0f9';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw some roads
-    ctx.strokeStyle = '#333';
+    // Draw some subtle roads - lighter gray
+    ctx.strokeStyle = '#d0d8e0';
     ctx.lineWidth = 8;
     
     // Horizontal roads
@@ -51,135 +51,99 @@ const MapView = ({ pickupLocation, destination, isAccepted }: MapViewProps) => {
       ctx.stroke();
     }
     
-    // Draw route
+    // Add some green areas (parks)
+    ctx.fillStyle = '#d5ebd5';
+    // Left side park
+    ctx.fillRect(0, canvas.height * 0.5, canvas.width * 0.3, canvas.height * 0.5);
+    // Right side parks
+    ctx.fillRect(canvas.width * 0.6, canvas.height * 0.4, canvas.width * 0.2, canvas.height * 0.15);
+    ctx.fillRect(canvas.width * 0.7, canvas.height * 0.7, canvas.width * 0.3, canvas.height * 0.2);
+    
+    // Draw route - dark gray like in the reference
     const startX = canvas.width * 0.2;
-    const startY = canvas.height * 0.6;
+    const startY = canvas.height * 0.3;
+    const middleX = canvas.width * 0.5;
+    const middleY = canvas.height * 0.4;
     const endX = canvas.width * 0.8;
-    const endY = canvas.height * 0.3;
+    const endY = canvas.height * 0.6;
     
-    // Control points for bezier curve
-    const cpX1 = startX + (endX - startX) * 0.3;
-    const cpY1 = startY - 50;
-    const cpX2 = endX - (endX - startX) * 0.3;
-    const cpY2 = endY + 50;
+    // Draw the route line - dark gray
+    ctx.strokeStyle = '#5a5a5a';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     
-    // Draw the route line
-    ctx.strokeStyle = isAccepted ? '#2563eb' : '#4b5563';
-    ctx.lineWidth = 4;
+    // First segment
     ctx.beginPath();
     ctx.moveTo(startX, startY);
-    ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, endX, endY);
+    ctx.lineTo(middleX, middleY);
     ctx.stroke();
     
-    // Draw pickup point
-    ctx.fillStyle = '#3b82f6';
+    // Second segment
     ctx.beginPath();
-    ctx.arc(startX, startY, 8, 0, Math.PI * 2);
+    ctx.moveTo(middleX, middleY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    
+    // Add pickup location dot
+    ctx.fillStyle = '#5a5a5a';
+    ctx.beginPath();
+    ctx.arc(startX, startY, 10, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw destination point
-    ctx.fillStyle = '#2563eb';
+    // Add middle point dot
     ctx.beginPath();
-    ctx.arc(endX, endY, 8, 0, Math.PI * 2);
+    ctx.arc(middleX, middleY, 10, 0, Math.PI * 2);
     ctx.fill();
     
-    // Car icon for accepted trips
+    // Add destination point with arrow/marker
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(endX, endY, 18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.moveTo(endX, endY - 10);
+    ctx.lineTo(endX + 8, endY + 5);
+    ctx.lineTo(endX - 8, endY + 5);
+    ctx.fill();
+    
+    // Add restaurant icon for pickup
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(startX, startY, 15, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#5a5a5a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('R', startX, startY);
+    
     if (isAccepted) {
-      // Animate car along path
-      let progress = 0;
-      let lastTimestamp: number | null = null;
+      // Add car position when accepted
+      const carX = middleX;
+      const carY = middleY;
       
-      const animateCar = (timestamp: number) => {
-        if (!lastTimestamp) lastTimestamp = timestamp;
-        const elapsed = timestamp - lastTimestamp;
-        
-        // Update progress
-        progress += elapsed / 15000; // Complete in 15 seconds
-        
-        if (progress <= 1) {
-          // Redraw background portion where car was
-          const prevT = Math.max(0, progress - elapsed / 15000);
-          const prevX = bezierPoint(startX, cpX1, cpX2, endX, prevT);
-          const prevY = bezierPoint(startY, cpY1, cpY2, endY, prevT);
-          
-          // Clean old car position
-          ctx.fillStyle = '#1a1d24';
-          ctx.beginPath();
-          ctx.arc(prevX, prevY, 12, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Redraw road section
-          ctx.strokeStyle = '#2563eb';
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          const segmentStart = Math.max(0, prevT - 0.05);
-          const segmentEnd = Math.min(1, prevT + 0.05);
-          
-          // Draw segment of bezier curve
-          let x = bezierPoint(startX, cpX1, cpX2, endX, segmentStart);
-          let y = bezierPoint(startY, cpY1, cpY2, endY, segmentStart);
-          ctx.moveTo(x, y);
-          
-          for (let t = segmentStart + 0.01; t <= segmentEnd; t += 0.01) {
-            x = bezierPoint(startX, cpX1, cpX2, endX, t);
-            y = bezierPoint(startY, cpY1, cpY2, endY, t);
-            ctx.lineTo(x, y);
-          }
-          ctx.stroke();
-          
-          // Calculate car position
-          const carX = bezierPoint(startX, cpX1, cpX2, endX, progress);
-          const carY = bezierPoint(startY, cpY1, cpY2, endY, progress);
-          
-          // Calculate tangent angle for car rotation
-          const tangentX = bezierTangent(startX, cpX1, cpX2, endX, progress);
-          const tangentY = bezierTangent(startY, cpY1, cpY2, endY, progress);
-          const angle = Math.atan2(tangentY, tangentX);
-          
-          // Draw car
-          ctx.save();
-          ctx.translate(carX, carY);
-          ctx.rotate(angle);
-          
-          // Car shape
-          ctx.fillStyle = '#fbbf24';
-          ctx.beginPath();
-          ctx.rect(-8, -5, 16, 10);
-          ctx.fill();
-          
-          ctx.restore();
-          
-          // Request next frame
-          requestAnimationFrame(animateCar);
-        }
-        
-        lastTimestamp = timestamp;
-      };
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(carX, carY, 14, 0, Math.PI * 2);
+      ctx.fill();
       
-      requestAnimationFrame(animateCar);
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(carX, carY, 8, 0, Math.PI * 2);
+      ctx.fill();
     }
+    
   }, [pickupLocation, destination, isAccepted]);
-  
-  // Helper functions for bezier curves
-  function bezierPoint(p0: number, p1: number, p2: number, p3: number, t: number): number {
-    const oneMinusT = 1 - t;
-    return Math.pow(oneMinusT, 3) * p0 +
-           3 * Math.pow(oneMinusT, 2) * t * p1 +
-           3 * oneMinusT * Math.pow(t, 2) * p2 +
-           Math.pow(t, 3) * p3;
-  }
-  
-  function bezierTangent(p0: number, p1: number, p2: number, p3: number, t: number): number {
-    const oneMinusT = 1 - t;
-    return 3 * oneMinusT * oneMinusT * (p1 - p0) +
-           6 * oneMinusT * t * (p2 - p1) +
-           3 * t * t * (p3 - p2);
-  }
 
   return (
     <div 
       ref={mapRef} 
-      className="absolute top-0 left-0 w-full h-full bg-[#1a1d24] z-0"
+      className="absolute top-0 left-0 w-full h-full bg-blue-50 z-0"
+      style={{ height: '75vh' }}
     ></div>
   );
 };

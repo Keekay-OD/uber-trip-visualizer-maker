@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { formatCurrency, formatDistance, formatTime } from "@/utils/formatting";
 import MapView from "@/components/MapView";
-import { Navigation, DollarSign, Clock, Route } from "lucide-react";
+import { Clock, Utensils } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface TripDetailsProps {
   isAccepted: boolean;
@@ -16,12 +17,14 @@ interface TripDetailsProps {
 
 const TripDetails = ({ isAccepted, onAccept, onDecline, onReset }: TripDetailsProps) => {
   // Editable trip details
-  const [pickupLocation, setPickupLocation] = useState("123 Main St");
-  const [destination, setDestination] = useState("456 Market St");
-  const [payout, setPayout] = useState("15.75");
-  const [distance, setDistance] = useState("3.2");
-  const [estimatedTime, setEstimatedTime] = useState("12");
+  const [pickupLocation, setPickupLocation] = useState("George The Greek");
+  const [destination, setDestination] = useState("Barclay Ave & The Queensway, Etobicoke");
+  const [payout, setPayout] = useState("6.52");
+  const [distance, setDistance] = useState("6.6");
+  const [estimatedTime, setEstimatedTime] = useState("22");
   const [isEditing, setIsEditing] = useState(!isAccepted);
+  const [includesTip, setIncludesTip] = useState(true);
+  const [currencyPrefix, setCurrencyPrefix] = useState("CA$");
   
   const handlePayoutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow numbers and one decimal point
@@ -67,10 +70,10 @@ const TripDetails = ({ isAccepted, onAccept, onDecline, onReset }: TripDetailsPr
         isAccepted={isAccepted}
       />
       
-      <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-20 bg-gradient-to-t from-[#191919] to-transparent">
-        <Card className="bg-[#222222] border-none shadow-lg p-5 rounded-xl text-white">
+      <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+        <Card className="bg-white border border-gray-200 shadow-lg p-0 rounded-3xl text-black overflow-hidden">
           {isAccepted ? (
-            <div className="space-y-4">
+            <div className="space-y-4 p-5">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold">Trip in Progress</h2>
                 <Button variant="outline" size="sm" onClick={onReset}>
@@ -80,17 +83,15 @@ const TripDetails = ({ isAccepted, onAccept, onDecline, onReset }: TripDetailsPr
               
               <div className="flex items-center gap-3 py-2">
                 <div className="flex flex-col items-center">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  <div className="w-0.5 h-10 bg-gray-700"></div>
-                  <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                  <div className="w-3 h-3 bg-black rounded-full"></div>
+                  <div className="w-0.5 h-10 bg-gray-300"></div>
+                  <div className="w-3 h-3 bg-black rounded-full"></div>
                 </div>
                 <div className="flex-1 space-y-2">
                   <div>
-                    <p className="text-sm text-gray-400">Pickup</p>
                     <p className="font-medium">{pickupLocation}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Destination</p>
                     <p className="font-medium">{destination}</p>
                   </div>
                 </div>
@@ -98,126 +99,150 @@ const TripDetails = ({ isAccepted, onAccept, onDecline, onReset }: TripDetailsPr
               
               <div className="flex justify-between text-sm">
                 <div className="flex items-center gap-1">
-                  <DollarSign size={16} className="text-green-500" />
-                  <span>{formatCurrency(parseFloat(payout))}</span>
+                  <span>{currencyPrefix}{payout}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Route size={16} className="text-blue-400" />
-                  <span>{formatDistance(parseFloat(distance))}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock size={16} className="text-yellow-400" />
-                  <span>{formatTime(parseInt(estimatedTime))}</span>
+                  <Clock size={16} className="text-black" />
+                  <span>{estimatedTime} min ({formatDistance(parseFloat(distance))})</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">New Trip Request</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={toggleEditMode}
-                  className="text-blue-400"
-                >
-                  {isEditing ? "Done" : "Edit"}
-                </Button>
-              </div>
-              
+            <div>
               {isEditing ? (
-                <div className="space-y-3">
+                <div className="p-5 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold">Edit Trip Request</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={toggleEditMode}
+                      className="text-blue-600"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                
                   <div>
-                    <label className="text-sm text-gray-400 mb-1 block">Pickup Location</label>
+                    <label className="text-sm text-gray-600 mb-1 block">Currency Prefix</label>
+                    <Input 
+                      value={currencyPrefix}
+                      onChange={(e) => setCurrencyPrefix(e.target.value)}
+                      className="border-gray-300"
+                    />
+                  </div>
+                
+                  <div>
+                    <label className="text-sm text-gray-600 mb-1 block">Pickup Location</label>
                     <Input 
                       value={pickupLocation}
                       onChange={(e) => setPickupLocation(e.target.value)}
-                      className="bg-[#2a2a2a] border-gray-700 text-white"
+                      className="border-gray-300"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400 mb-1 block">Destination</label>
+                    <label className="text-sm text-gray-600 mb-1 block">Destination</label>
                     <Input 
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
-                      className="bg-[#2a2a2a] border-gray-700 text-white"
+                      className="border-gray-300"
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-sm text-gray-400 mb-1 block">Payout ($)</label>
+                      <label className="text-sm text-gray-600 mb-1 block">Payout</label>
                       <Input 
                         value={payout}
                         onChange={handlePayoutChange}
-                        className="bg-[#2a2a2a] border-gray-700 text-white"
+                        className="border-gray-300"
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-gray-400 mb-1 block">Distance (mi)</label>
+                      <label className="text-sm text-gray-600 mb-1 block">Distance (km)</label>
                       <Input 
                         value={distance}
                         onChange={handleDistanceChange}
-                        className="bg-[#2a2a2a] border-gray-700 text-white"
+                        className="border-gray-300"
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-gray-400 mb-1 block">Time (min)</label>
+                      <label className="text-sm text-gray-600 mb-1 block">Time (min)</label>
                       <Input 
                         value={estimatedTime}
                         onChange={handleTimeChange}
-                        className="bg-[#2a2a2a] border-gray-700 text-white"
+                        className="border-gray-300"
                       />
                     </div>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="includesTip"
+                      checked={includesTip}
+                      onChange={(e) => setIncludesTip(e.target.checked)}
+                      className="mr-2"
+                    />
+                    <label htmlFor="includesTip" className="text-sm text-gray-600">
+                      Show "including estimated tip"
+                    </label>
                   </div>
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                      <div className="w-0.5 h-10 bg-gray-700"></div>
-                      <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                  <div className="flex items-center px-4 pt-3 pb-2">
+                    <Badge className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1 px-4 py-1.5 rounded-full text-sm">
+                      <Utensils size={16} />
+                      <span>Delivery</span>
+                    </Badge>
+                  </div>
+                  
+                  <div className="px-5">
+                    <h2 className="text-5xl font-extrabold">{currencyPrefix}{payout}</h2>
+                    {includesTip && <p className="text-gray-500 text-sm mt-1">including estimated tip</p>}
+                  </div>
+                  
+                  <div className="px-5 py-3 border-b border-gray-200">
+                    <div className="flex items-center gap-2 text-base">
+                      <Clock size={20} className="text-black" />
+                      <span className="font-semibold">{estimatedTime} min ({parseFloat(distance).toFixed(1)} km) total</span>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <div>
-                        <p className="text-sm text-gray-400">Pickup</p>
-                        <p className="font-medium">{pickupLocation}</p>
+                  </div>
+                  
+                  <div className="px-5 py-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className="w-2.5 h-2.5 bg-black rounded-full mt-1.5"></div>
+                        <div className="w-0.5 h-10 bg-gray-300"></div>
+                        <div className="w-2.5 h-2.5 bg-black rounded-full"></div>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-400">Destination</p>
-                        <p className="font-medium">{destination}</p>
+                      <div className="flex-1 space-y-4">
+                        <div>
+                          <p className="font-medium text-base">{pickupLocation}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-base">{destination}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex justify-between text-sm">
-                    <div className="flex items-center gap-1">
-                      <DollarSign size={16} className="text-green-500" />
-                      <span>{formatCurrency(parseFloat(payout))}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Route size={16} className="text-blue-400" />
-                      <span>{formatDistance(parseFloat(distance))}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} className="text-yellow-400" />
-                      <span>{formatTime(parseInt(estimatedTime))}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="p-5 pt-3">
                     <Button 
-                      variant="outline" 
-                      className="bg-transparent text-white border-gray-700 hover:bg-gray-800"
-                      onClick={onDecline}
-                    >
-                      Decline
-                    </Button>
-                    <Button 
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="w-full bg-black hover:bg-gray-800 text-white rounded-full font-medium py-6"
                       onClick={onAccept}
                     >
                       Accept
+                    </Button>
+                  </div>
+                  
+                  <div className="absolute top-4 right-4">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-black hover:bg-transparent p-1"
+                      onClick={toggleEditMode}
+                    >
+                      Edit
                     </Button>
                   </div>
                 </>

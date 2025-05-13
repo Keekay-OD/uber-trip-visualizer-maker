@@ -2,19 +2,15 @@
 /**
  * Format a number as a currency string
  */
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2
-  }).format(amount);
+export function formatCurrency(amount: number, prefix: string = "$"): string {
+  return prefix + amount.toFixed(2);
 }
 
 /**
- * Format a distance with miles unit
+ * Format a distance with kilometers unit
  */
 export function formatDistance(distance: number): string {
-  return `${distance.toFixed(1)} mi`;
+  return `${distance.toFixed(1)} km`;
 }
 
 /**

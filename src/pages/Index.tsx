@@ -25,9 +25,14 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#191919] text-white flex flex-col">
-      <header className="p-4 bg-black flex justify-center">
-        <h1 className="text-xl font-bold">Uber Trip Simulator</h1>
+    <div className="min-h-screen bg-[#e9f0f9] flex flex-col">
+      <header className="p-3 bg-black flex justify-center z-10">
+        <div className="flex items-center justify-between w-full max-w-sm">
+          <div className="text-white text-lg font-medium">8:03</div>
+          <div className="flex items-center gap-2">
+            <div className="text-white">52%</div>
+          </div>
+        </div>
       </header>
       
       <main className="flex-1 relative">
