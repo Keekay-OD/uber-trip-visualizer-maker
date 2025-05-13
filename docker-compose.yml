@@ -1,0 +1,12 @@
+
+version: '3.8'
+
+services:
+  uberapp:
+    build: .
+    container_name: uber-trip-simulator
+    ports:
+      - "5004:5004"
+    volumes:
+      - .:/app
+      - /app/node_modules
